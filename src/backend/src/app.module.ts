@@ -26,11 +26,11 @@ import { ClassroomController } from './classroom/classroom.controller';
   imports: [
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'cornelius.db.elephantsql.com',
+      host: 'database-cf.cpyy6g6mq86h.us-east-1.rds.amazonaws.com',
       port: 5432,
-      username: 'aiomqkhi',
-      password: 'dCsNMk1RlJqsy59eB7vcSff9AcbVxVhh',
-      database: 'aiomqkhi',
+      username: 'postgres',
+      password: '12345678',
+      database: 'CF',
       entities: [ong, workshop, category, student, StudentUpdateDTO],
       synchronize: false, 
     }), OngModule, WorkshopModule, ClassroomModule, StudentModule, CategoryModule, UserModule, PresenceModule, ClassModule, TeacherModule],
