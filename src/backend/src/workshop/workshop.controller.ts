@@ -101,6 +101,7 @@ export class WorkshopController {
     async listClassroomsByWorkshop(@Param('idWorkshop') idWorkshop: string) {
         const classrooms = await this.workshopService.listAllClassroomsByWorkshop(Number(idWorkshop));
         return classrooms;
+    }
 
     @Get('/student')
     async getStudentsCountByWorkshop(){
