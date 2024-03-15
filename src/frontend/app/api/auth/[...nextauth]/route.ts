@@ -43,7 +43,7 @@ const nextAuthOptions: NextAuthOptions = {
         }),
     ],
     pages: {
-        signIn: '/login'
+        signIn: `${process.env.NEXT_PUBLIC_BACKEND_IP}/login`
     },
     callbacks: {
         async jwt({ token, user }) {
