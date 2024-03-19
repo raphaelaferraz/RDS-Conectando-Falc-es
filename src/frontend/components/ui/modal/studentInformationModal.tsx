@@ -95,7 +95,7 @@ export default function StudentModal({ student, functions }: { student: any, fun
   // Função que envia os dados do formulário de atualização do aluno
   const submit = async () => {
     try {
-      const response = await fetch(`http://localhost:3001/students/${formData.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_IP}/students/${formData.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
