@@ -1,7 +1,7 @@
 import { InjectEntityManager, InjectRepository } from "@nestjs/typeorm";
 import { Injectable } from '@nestjs/common';
 import { workshop } from "./workshop.entity";
-import { StudentDTO } from "src/student/student.dto";
+import { StudentDTO } from "src/student/dto/student.dto";
 import { Repository } from 'typeorm';
 import { EntityManager } from "typeorm";
 
@@ -28,81 +28,71 @@ export class WorkshopService {
 
     async listAll() {
         const query = `
-    SELECT 
-    w.id AS workshopid, 
-    w.ongid AS ongid, 
-    ong.name AS ongname, 
-    w.name AS name, 
-    w.description AS description,
-    cat.id AS categoryid,
-    cat.name AS category,
-    cat.color AS color,
-    jsonb_agg(
-        jsonb_build_object(
-            'classroomid', c.id,
-            'classroomname', c.name,
-            'day', c.day,
-            'startTime', c.startTime,
-            'endTime', c.endTime,
-            'professor', t.name,
-            'students', (
-                SELECT jsonb_agg(
-                    jsonb_build_object(
-                        'id', s.id,
-                        'name', s.name,
-                        'dateofbirth', s.dateOfBirth,
-                        'gender', s.gender,
-                        'rg', s.rg,
-                        'cpf', s.cpf,
-                        'maritalstatus', s.maritalStatus,
-                        'raceethnicity', s.raceEthnicity,
-                        'address', s.address,
-                        'state', s.state,
-                        'city', s.city,
-                        'phonenumber', s.phoneNumber,
-                        'landline', s.landline,
-                        'email', s.email
+        SELECT 
+            w.id AS workshopid, 
+            w.ongid AS ongid, 
+            ong.name AS ongname, 
+            w.name AS name, 
+            w.description AS description,
+            cat.id AS categoryid,
+            cat.name AS category,
+            cat.color AS color,
+            COALESCE(jsonb_agg(
+                DISTINCT jsonb_build_object(
+                    'classroomid', c.id,
+                    'classroomname', c.name,
+                    'day', c.day,
+                    'startTime', c.startTime,
+                    'endTime', c.endTime,
+                    'professor', t.name,
+                    'students', (
+                        SELECT COALESCE(jsonb_agg(
+                            DISTINCT jsonb_build_object(
+                                'id', s.id,
+                                'name', s.name,
+                                'dateofbirth', s.dateOfBirth,
+                                'gender', s.gender,
+                                'rg', s.rg,
+                                'cpf', s.cpf,
+                                'maritalstatus', s.maritalStatus,
+                                'raceethnicity', s.raceEthnicity,
+                                'address', s.address,
+                                'state', s.state,
+                                'city', s.city,
+                                'phonenumber', s.phoneNumber,
+                                'landline', s.landline,
+                                'email', s.email
+                            )
+                        ), '[]'::jsonb) 
+                        FROM student AS s
+                        JOIN student_classroom AS sc ON sc.studentid = s.id 
+                        WHERE sc.classroomid = c.id
                     )
-                ) 
-                FROM student AS s
-                JOIN student_classroom AS sc ON sc.studentid = s.id 
-                WHERE sc.classroomid = c.id
-            )
-        )
-    ) AS classroom
-    FROM 
-        workshop AS w 
-    JOIN 
-        ong ON w.ongid = ong.id
-    JOIN 
-        category AS cat 
-        ON w.categoryid = cat.id 
-    JOIN 
-        classroom AS c 
-        ON c.workshopid = w.id 
-    JOIN 
-        teacher_classroom AS tc 
-        ON tc.classroomid = c.id 
-    JOIN 
-        teacher AS t 
-        ON tc.teacherid = t.id 
-    GROUP BY 
-        w.id, 
-        w.ongid, 
-        ong.name, 
-        w.name,
-        c.id, 
-        c.name, 
-        c.day,
-        c.startTime,
-        c.endTime,
-        t.name,
-        cat.id,
-        cat.name,
-        cat.color
-    ORDER BY 
-        w.id ASC;
-    `;
+                )
+            ), '[]'::jsonb) AS classroom
+        FROM 
+            workshop AS w 
+        LEFT JOIN 
+            ong ON w.ongid = ong.id
+        LEFT JOIN 
+            category AS cat ON w.categoryid = cat.id 
+        LEFT JOIN 
+            classroom AS c ON c.workshopid = w.id 
+        LEFT JOIN 
+            teacher_classroom AS tc ON tc.classroomid = c.id 
+        LEFT JOIN 
+            teacher AS t ON tc.teacherid = t.id 
+        GROUP BY 
+            w.id, 
+            w.ongid, 
+            ong.name, 
+            w.name,
+            cat.id,
+            cat.name,
+            cat.color
+        ORDER BY 
+            w.id ASC;
+        `;
         const workshops = await this.entityManager.query(query);
         return workshops;
     }
@@ -119,81 +109,79 @@ export class WorkshopService {
     */
     async findById(id: number) {
         const query = `
-    SELECT 
-    w.id AS workshopid, 
-    w.ongid AS ongid, 
-    ong.name AS ongname, 
-    w.name AS name, 
-    cat.id AS categoryid,
-    w.description AS description,
-    cat.name AS category,
-    cat.color AS color,
-    jsonb_agg(
-        jsonb_build_object(
-            'classroomid', c.id,
-            'classroomname', c.name,
-            'day', c.day,
-            'starttime', c.startTime,
-            'endtime', c.endTime,
-            'professor', t.name,
-            'students', (
-                SELECT jsonb_agg(
-                    jsonb_build_object(
-                        'id', s.id,
-                        'name', s.name,
-                        'dateofbirth', s.dateOfBirth,
-                        'gender', s.gender,
-                        'rg', s.rg,
-                        'cpf', s.cpf,
-                        'maritalstatus', s.maritalStatus,
-                        'raceethnicity', s.raceEthnicity,
-                        'address', s.address,
-                        'state', s.state,
-                        'city', s.city,
-                        'phonenumber', s.phoneNumber,
-                        'landline', s.landline,
-                        'email', s.email
+        SELECT 
+            w.id AS workshopid, 
+            w.ongid AS ongid, 
+            ong.name AS ongname, 
+            w.name AS name, 
+            w.description AS description,
+            cat.id AS categoryid,
+            cat.name AS category,
+            cat.color AS color,
+            jsonb_agg(
+                DISTINCT jsonb_build_object(
+                    'classroomid', c.id,
+                    'classroomname', c.name,
+                    'day', c.day,
+                    'starttime', c.startTime,
+                    'endtime', c.endTime,
+                    'professor', t.name,
+                    'students', (
+                        SELECT COALESCE(jsonb_agg(
+                            jsonb_build_object(
+                                'id', s.id,
+                                'name', s.name,
+                                'dateofbirth', s.dateOfBirth,
+                                'gender', s.gender,
+                                'rg', s.rg,
+                                'cpf', s.cpf,
+                                'maritalstatus', s.maritalStatus,
+                                'raceethnicity', s.raceEthnicity,
+                                'address', s.address,
+                                'state', s.state,
+                                'city', s.city,
+                                'phonenumber', s.phoneNumber,
+                                'landline', s.landline,
+                                'email', s.email
+                            )), '[]'::jsonb) 
+                        FROM student AS s
+                        LEFT JOIN student_classroom AS sc ON sc.studentid = s.id
+                        WHERE sc.classroomid = c.id
                     )
-                ) 
-                FROM student AS s
-                JOIN student_classroom AS sc ON sc.studentid = s.id 
-                WHERE sc.classroomid = c.id
-            )
-        )
-    ) AS classroom
-    FROM 
-        workshop AS w 
-    JOIN 
-        ong ON w.ongid = ong.id
-    JOIN 
-        category AS cat 
-        ON w.categoryid = cat.id 
-    JOIN 
-        classroom AS c 
-        ON c.workshopid = w.id 
-    JOIN 
-        teacher_classroom AS tc 
-        ON tc.classroomid = c.id 
-    JOIN 
-        teacher AS t 
-        ON tc.teacherid = t.id 
-    WHERE
-      c.id = $1
-    GROUP BY 
-        w.id, 
-        w.ongid, 
-        ong.name, 
-        w.name,
-        c.id, 
-        c.name, 
-        c.day,
-        c.startTime,
-        c.endTime,
-        t.name,
-        cat.id,
-        cat.name,
-        cat.color
-    `
+                )
+            ) FILTER (WHERE c.id IS NOT NULL) AS classroom -- Garante que só agregue se houver uma turma
+        FROM 
+            workshop AS w 
+        LEFT JOIN 
+            ong ON w.ongid = ong.id
+        LEFT JOIN 
+            category AS cat ON w.categoryid = cat.id 
+        LEFT JOIN 
+            classroom AS c ON c.workshopid = w.id 
+        LEFT JOIN 
+            teacher_classroom AS tc ON tc.classroomid = c.id 
+        LEFT JOIN 
+            teacher AS t ON t.id = tc.teacherid 
+        WHERE
+            c.id = $1
+        GROUP BY 
+            w.id, 
+            w.ongid, 
+            ong.name, 
+            w.name,
+            c.id, 
+            c.name, 
+            c.day,
+            c.startTime,
+            c.endTime,
+            t.name,
+            cat.id,
+            cat.name,
+            cat.color
+        ORDER BY 
+            w.id ASC;
+
+        `;
         const workshops = await this.entityManager.query(query, [id]);
         return workshops;
     }
@@ -296,7 +284,7 @@ export class WorkshopService {
      * pelo sistema.
     */
     async updateStudent(id: number, name: string, gender: string, dateofbirth: string, address: string, maritalstatus: string, raceethnicity: string, city: string, state: string, phonenumber: string, landline: string, email: string, rg: string, cpf: string) {
-        const query = `
+    const query = `
       UPDATE "student"
       SET 
           "name" = $2,
@@ -325,26 +313,27 @@ export class WorkshopService {
         return students;
     }
 
-    async getStudentsCountByWorkshop(): Promise<any[]> {
+    async getStudentsCountByWorkshop(idOng: number) {
         const query = `
-      SELECT
-        w.id AS workshopid,
-        w.name AS workshopname,
-        SUM(total_students) AS total_students
-      FROM workshop AS w
-      JOIN (
         SELECT
-          c.workshopid,
-          COUNT(DISTINCT s.id) AS total_students
-        FROM classroom AS c
-        JOIN student_classroom AS sc ON c.id = sc.classroomid
-        JOIN student AS s ON sc.studentid = s.id
-        GROUP BY c.workshopid
-      ) AS workshop_students ON w.id = workshop_students.workshopid
-      GROUP BY w.id, w.name;
-    `;
-        const results = await this.entityManager.query(query);
-        return results;
+            w.id AS workshopid,
+            w.name AS workshopname,
+            COALESCE(SUM(workshop_students.total_students), 0) AS total_students
+        FROM workshop AS w
+        LEFT JOIN (
+            SELECT
+                c.workshopid,
+                COUNT(DISTINCT s.id) AS total_students
+            FROM classroom AS c
+            JOIN student_classroom AS sc ON c.id = sc.classroomid
+            JOIN student AS s ON sc.studentid = s.id
+            GROUP BY c.workshopid
+        ) AS workshop_students ON w.id = workshop_students.workshopid
+        WHERE w.ongid = $1
+        GROUP BY w.id, w.name;
+        `;
+        const result = await this.entityManager.query(query, [idOng]);
+        return result;
     }
     /**
      * Adiciona um aluno a uma turma especificada pelos seus IDs.
@@ -359,15 +348,15 @@ export class WorkshopService {
       VALUES ($1, $2)
       ON CONFLICT DO NOTHING;
     `;
-    await this.entityManager.query(query, [studentId, classroomId]);
-  }
+        await this.entityManager.query(query, [studentId, classroomId]);
+    }
 
-  /**
-   * Lista todas as presenças de um aluno em uma turma específica, de acordo com a oficina.
-   */
-  async listAllClassroomsPresenceByWorkshop(idWorkshop: number) {
-    // Consulta ajustada para obter todas as turmas de uma oficina baseada no classroomId fornecido.
-    const query = `
+    /**
+     * Lista todas as presenças de um aluno em uma turma específica, de acordo com a oficina.
+     */
+    async listAllClassroomsPresenceByWorkshop(idWorkshop: number) {
+        // Consulta ajustada para obter todas as turmas de uma oficina baseada no classroomId fornecido.
+        const query = `
     WITH workshop_details AS (
       SELECT w.id AS workshop_id, w.name AS workshop_name
       FROM classroom c
@@ -388,36 +377,73 @@ export class WorkshopService {
     JOIN workshop_details wd ON c.workshopid = wd.workshop_id
     GROUP BY wd.workshop_id, wd.workshop_name, c.id, c.name, cl.datetime::date 
     ORDER BY c.id, cl.datetime::date; `;
-    const presences = await this.entityManager.query(query, [idWorkshop]);
-  
-    // Calcular a média das médias de presença das turmas da oficina.
-    let totalAverage = 0;
-    if (presences.length > 0) {
-      totalAverage = presences.reduce((acc, curr) => acc + parseFloat(curr.average_presence), 0) / presences.length;
+        const presences = await this.entityManager.query(query, [idWorkshop]);
+
+        // Calcular a média das médias de presença das turmas da oficina.
+        let totalAverage = 0;
+        if (presences.length > 0) {
+            totalAverage = presences.reduce((acc, curr) => acc + parseFloat(curr.average_presence), 0) / presences.length;
+        }
+
+        // Formatar a média de presença como porcentagem.
+        const formattedTotalAverage = `${totalAverage.toFixed(2)}%`;
+
+        return {
+            workshopPresence: presences.map(presence => ({
+                ...presence,
+                average_presence: `${parseFloat(presence.average_presence).toFixed(2)}%`
+            })),
+            overallWorkshopAverage: formattedTotalAverage
+        };
     }
-  
-    // Formatar a média de presença como porcentagem.
-    const formattedTotalAverage = `${totalAverage.toFixed(2)}%`;
-  
-    return {
-      workshopPresence: presences.map(presence => ({
-        ...presence,
-        average_presence: `${parseFloat(presence.average_presence).toFixed(2)}%`
-      })),
-      overallWorkshopAverage: formattedTotalAverage
-    };
-  }  
-  
-  /**
-   * Lista todas as turmas de uma oficina específica, de acordo com o ID da oficina.
-   */
-  async listAllClassroomsByWorkshop(idWorkshop: number) {
+
+    /**
+     * Lista todas as turmas de uma oficina específica, de acordo com o ID da oficina.
+     */
+    async listAllClassroomsByWorkshop(idWorkshop: number) {
+        const query = `
+        SELECT 
+            c.id AS classroomid, 
+            c.name AS classroomname, 
+            c.day AS classroomday,
+            c.starttime AS classroomstarttime,
+            c.endtime AS classroomendtime,
+            w.id AS workshopid, 
+            w.name AS workshopname, 
+            cat.id AS categoryid, 
+            cat.name AS categoryname, 
+            cat.color AS categorycolor,
+            COUNT(sc.studentid) AS studentcount
+        FROM 
+            classroom c
+        JOIN 
+            workshop w ON c.workshopid = w.id
+        JOIN 
+            category cat ON w.categoryid = cat.id
+        LEFT JOIN 
+            student_classroom sc ON c.id = sc.classroomid
+        WHERE 
+            w.id = $1
+        GROUP BY 
+            c.id, w.id, cat.id;
+`;
+        const classrooms = await this.entityManager.query(query, [idWorkshop]);
+        return classrooms;
+    }
+
+  async createWorkshop(name: string, ongId: number, categoryId: number, description: string) {
     const query = `
-    SELECT c.id AS classroom_id, c.name AS classroom_name, w.id AS workshop_id, w.name AS workshop_name
-    FROM classroom c
-    JOIN workshop w ON c.workshopid = w.id
-    WHERE w.id = $1;`;
-    const classrooms = await this.entityManager.query(query, [idWorkshop]);
-    return classrooms;
+    INSERT INTO "workshop" ("name", "ongid", "categoryid", "description")
+    VALUES ($1, $2, $3, $4)
+    RETURNING *;
+  `;
+    const newWorkshop = await this.entityManager.query(query, [name, ongId, categoryId, description]);
+    return newWorkshop;
+  }
+
+  async listWorkshopById(id: number) {
+    const query = 'SELECT * FROM "public"."workshop" WHERE "id" = $1';
+    const workshop = await this.entityManager.query(query, [id]);
+    return workshop;
   }
 }

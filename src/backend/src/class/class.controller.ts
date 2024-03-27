@@ -1,5 +1,5 @@
 // Importa os decoradores do pacote @nestjs/common, serviço de aula e DTO de aula
-import { Controller, Post, Get, Body } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param } from '@nestjs/common';
 import { ClassService } from './class.service';
 import { ClassDTO } from './class.dto';
 import { PresenceEntity } from 'src/presence/presence.entity'; // Certifique-se de importar a entidade de presença
@@ -25,11 +25,6 @@ export class ClassController {
      * representando as presenças recém-registradas. Cada entidade de presença inclui detalhes como o ID do workshop,
      * informações do participante e o status de presença.
     */
-    @Post('/presence')
-    async registerPresence(@Body() dataClasses: ClassDTO[]) {
-        const newPresence = await this.classService.registerBatch(dataClasses);
-        return newPresence;
-    }
 
     /**
      * Endpoint para listar todas as presenças registradas.
@@ -41,8 +36,8 @@ export class ClassController {
      * @returns {Promise<PresenceEntity[]>} Uma promessa que resolve para uma lista de entidades de presença,
      * representando todas as presenças registradas.
     */
-    @Get('/presence')
-    async listPresence(): Promise<PresenceEntity[]> {
-        return await this.classService.getAllPresences();
-    }
+    // @Get('/presence')
+    // async listPresence(): Promise<PresenceEntity[]> {
+    //     return await this.classService.getAllPresences();
+    // }
 }

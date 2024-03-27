@@ -9,7 +9,7 @@ import { useEffect, useState} from 'react';
 import { useSession } from 'next-auth/react';
 
 // Páginas da aplicação
-import TeacherPage from './estudantes/page';
+import TeacherPage from '../../userPages/teacher/oficinas';
 import LeaderPage from '../../userPages/leader/home';
 
 // Esta página "HomeScreen" será a primeira página do fluxo de Líder da ONG, exibindo os principais caminhos e dados.

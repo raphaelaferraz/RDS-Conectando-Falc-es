@@ -1,14 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { ClassEntity } from './class.entity';
 import { ClassDTO } from './class.dto';
-import { PresenceService } from 'src/presence/presence.service';
 import { PresenceEntity } from 'src/presence/presence.entity';
+import { InjectEntityManager } from '@nestjs/typeorm';
+import { EntityManager } from "typeorm";
 
 @Injectable()
 export class ClassService {
-    private classes: ClassEntity[] = [];
 
-    constructor(private readonly presenceService: PresenceService) {} 
+    constructor(
+		@InjectEntityManager()
+		private entityManager: EntityManager,
+	) { }
 
     /**
      * Registra em lote as aulas junto com a presença dos estudantes. Este método recebe um array de objetos `ClassDTO`,
@@ -26,46 +29,44 @@ export class ClassService {
      * recém-registradas, cada uma contendo detalhes da aula e arrays de entidades de presença representando os estudantes presentes
      * e ausentes.
      */
-    async registerBatch(dataClass: ClassDTO[]): Promise<ClassEntity[]> {
-        const newClasses: ClassEntity[] = [];
     
-        for (const classData of dataClass) {
-            const idClass = this.classes.length + 1;
 
-            const newClass: ClassEntity = {
-                idClass: idClass,
-                idClassroom: classData.idClassroom,
-                dateTime: classData.dateTime,
-                idTeacher: classData.idTeacher,
-                presence: [],
-                absent: []
-            };
-    
-            for (const presenceData of classData.presence) {
-                const newPresence: PresenceEntity = {
-                    id: this.presenceService.presences.length + 1,
-                    idClass: idClass,
-                    idStudent: presenceData,
-                    presence: true
-                };
-                newClass.presence.push(newPresence);
-            }
+        // for (const classData of dataClass) {
+        //     const idClass = this.classes.length + 1;
 
-            for (const presenceData of classData.absent) {
-                const newPresence: PresenceEntity = {
-                    id: this.presenceService.presences.length + 1,
-                    idClass: idClass,
-                    idStudent: presenceData,
-                    presence: false
-                };
-                newClass.absent.push(newPresence);
-            }
+        //     const newClass: ClassEntity = {
+        //         idClass: idClass,
+        //         idClassroom: classData.idClassroom,
+        //         dateTime: classData.dateTime,
+        //         idTeacher: classData.idTeacher,
+        //         presence: [],
+        //         absent: []
+        //     };
     
-            this.classes.push(newClass);
-            newClasses.push(newClass);
-        }
-        return newClasses;
-    }
+        //     for (const presenceData of classData.presence) {
+        //         const newPresence: PresenceEntity = {
+        //             id: this.presenceService.presences.length + 1,
+        //             idClass: idClass,
+        //             idStudent: presenceData,
+        //             presence: true
+        //         };
+        //         newClass.presence.push(newPresence);
+        //     }
+
+        //     for (const presenceData of classData.absent) {
+        //         const newPresence: PresenceEntity = {
+        //             id: this.presenceService.presences.length + 1,
+        //             idClass: idClass,
+        //             idStudent: presenceData,
+        //             presence: false
+        //         };
+        //         newClass.absent.push(newPresence);
+        //     }
+    
+        //     this.classes.push(newClass);
+        //     newClasses.push(newClass);
+        // }
+        // return newClasses;
 
     /**
      * Obtém todas as presenças registradas em todas as aulas.
@@ -76,14 +77,14 @@ export class ClassService {
      * @returns {Promise<PresenceEntity[]>} Uma promessa que resolve para uma lista das entidades de presença
      * representando todas as presenças registradas.
      */
-    async getAllPresences(): Promise<PresenceEntity[]> {
-        const allPresences: PresenceEntity[] = [];
+    // async getAllPresences(): Promise<PresenceEntity[]> {
+    //     const allPresences: PresenceEntity[] = [];
         
-        for (const classItem of this.classes) {
-            allPresences.push(...classItem.presence);
-            allPresences.push(...classItem.absent);
-        }
+    //     for (const classItem of this.classes) {
+    //         allPresences.push(...classItem.presence);
+    //         allPresences.push(...classItem.absent);
+    //     }
 
-        return allPresences;
-    }
+    //     return allPresences;
+    // }
 }

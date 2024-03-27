@@ -19,22 +19,24 @@ import { ong } from './ong/ong.entity';
 import { workshop } from './workshop/workshop.entity';
 import { category } from './category/category.entity';
 import { student } from './student/student.entity';
-import { StudentUpdateDTO } from './student/studentUpdate.dto';
+import { StudentUpdateDTO } from './student/dto/studentUpdate.dto';
 import { ClassroomController } from './classroom/classroom.controller';
+import { classroom } from './classroom/classroom.entity';
+import { ClassroomService } from './classroom/classroom.service';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'database-cf.cpyy6g6mq86h.us-east-1.rds.amazonaws.com',
+      host: 'cornelius.db.elephantsql.com',
       port: 5432,
-      username: 'postgres',
-      password: '12345678',
-      database: 'CF',
-      entities: [ong, workshop, category, student, StudentUpdateDTO],
+      username: 'aiomqkhi',
+      password: 'dCsNMk1RlJqsy59eB7vcSff9AcbVxVhh',
+      database: 'aiomqkhi',
+      entities: [ong, workshop, category, student],
       synchronize: false, 
     }), OngModule, WorkshopModule, ClassroomModule, StudentModule, CategoryModule, UserModule, PresenceModule, ClassModule, TeacherModule],
   controllers: [AppController, ClassController, ClassroomController],
-  providers: [AppService, ClassService, PresenceService],
+  providers: [AppService, ClassService, PresenceService, ClassroomService],
 })
 export class AppModule {}

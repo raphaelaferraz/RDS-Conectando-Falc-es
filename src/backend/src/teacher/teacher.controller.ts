@@ -1,5 +1,5 @@
 // Importa o decorador do pacote @nestjs/common, serviço de professor, DTO de professor e entidade de professor
-import { Controller, Get, Post, Body } from "@nestjs/common";
+import { Controller, Get, Post, Body, Param, Patch } from "@nestjs/common";
 import { TeacherService } from "./teacher.service";
 import { TeacherDTO } from "./teacher.dto";
 import { teacher } from "./teacher.entity";
@@ -19,18 +19,37 @@ export class TeacherController {
    * é utilizado para efetuar o registro do professor no sistema. Após o registro, o objeto `TeacherEntity`
    * do professor recém-registrado é retornado, incluindo um identificador único gerado para o professor.
    * 
-   * @param {TeacherCreateDTO} dataTeacher Um objeto `TeacherCreateDTO` contendo todas as informações
+   * @param {TeacherCreateDTO} professor Um objeto `TeacherCreateDTO` contendo todas as informações
    * 
    * @returns {Promise<TeacherEntity>} Uma promessa que resolve para a entidade `TeacherEntity` do professor
    * recém-registrado, incluindo seu identificador único e todas as informações fornecidas durante o registro.
   */
   @Post()
-  async registerTeacher(@Body() dataTeacher: TeacherCreateDTO) {
-    return this.teacherRepository.register(dataTeacher.name, dataTeacher.gender, dataTeacher.dateofbirth, dataTeacher.address, dataTeacher.maritalstatus, dataTeacher.raceethnicity, dataTeacher.city, dataTeacher.state, dataTeacher.phonenumber, dataTeacher.landline, dataTeacher.email, dataTeacher.rg, dataTeacher.cpf);
+  async registerTeacher(@Body() professor: TeacherCreateDTO) {
+    return this.teacherRepository.register(professor.name, professor.gender, professor.dateofbirth, professor.address, professor.maritalstatus, professor.raceethnicity, professor.city, professor.state, professor.phonenumber, professor.landline, professor.email, professor.rg, professor.cpf);
   }
 
-  @Get()
-  async listAll() {
-    return this.teacherRepository.listAll();
+  @Get('/ong/:ongId')
+  async listAll(@Param('ongId') ongID: number) {
+    return this.teacherRepository.listAll(ongID);
   }
+
+    /**
+   * Atualiza os dados de um professor existente. Este método recebe os dados de um professor a ser atualizado
+   * 
+   * @param {string} id - O identificador único do professor a ser atualizado. 
+   * @param {Object} professor - O objeto contendo os dados atualizados do professor.
+   *  
+   * @returns {Promise<student>} Uma promessa que resolve para a entidade `student` do professor.
+   */
+    @Patch('/:id')
+    async updateStudent(@Param('id') id: string, @Body() professor: any) {
+      return await this.teacherRepository.updateProfessor(Number(id), professor.name, professor.gender, professor.dateofbirth, professor.address, professor.maritalstatus, professor.raceethnicity, professor.city, professor.state, professor.phonenumber, professor.landline, professor.email, professor.rg, professor.cpf );
+    }
+
+  @Get('/:teacherId/workshops')
+  async listWorkshops(@Param('teacherId') teacherID: number) {
+    return this.teacherRepository.listWorkshops(teacherID);
+  }
+
 }

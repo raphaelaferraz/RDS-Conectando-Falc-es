@@ -3,7 +3,6 @@
 
 // Componentes internos do projeto
 import PassaroLoading from "@/components/ui/loading/passaroLoading"
-import ButtonBack from '@/components/ui/button/buttonBack';
 import StudentModal from '@/components/ui/modal/studentInformationModal';
 import { StudentAddModal } from '@/components/ui/modal/studentAddModal';
 
@@ -11,9 +10,14 @@ import { StudentAddModal } from '@/components/ui/modal/studentAddModal';
 import React, { useEffect, useState } from 'react'
 import styled from "styled-components"
 import { Checkbox } from 'antd';
+import type { DatePickerProps } from 'antd';
+import { DatePicker, Space } from 'antd';
 import { useRouter } from 'next/router';
 import moment from 'moment';
 import { get } from "http";
+import { ArrowLeftOutlined } from '@ant-design/icons';
+import { Button } from 'antd';
+import { useSession } from "next-auth/react";
 
 // Estilização
 const Page = styled.div`
@@ -98,6 +102,7 @@ const Informations = styled.ul`
 const Information = styled.li`
 	display: flex;
 	gap: 0.3rem;
+	align-items: center;
 `;
 
 const InformationLabel = styled.span`
@@ -192,6 +197,7 @@ export default function Workshop() {
 	const [idClass, setIdClass] = useState<number | null>(null);
 	const [durationDescription, setDurationDescription] = useState('');
 	const [description, setDescription] = useState('');
+	const { data: session } = useSession();
 
 	// Função para capturar o id da URL
 	function getTurmaIdFromURL(): any {
@@ -235,11 +241,12 @@ export default function Workshop() {
 
 			// Atualização do estado de informações da turma
 			setStudentsClassroom(data);
-			// Coletar IDs dos alunos para exclusão
-			const studentIds = data.map((student: any) => student.id);
-			setExcludedStudentIds(studentIds);
 
-			console.log(data.length);
+			// Coletar IDs dos alunos para exclusão
+			const studentIds = Array.isArray(data) ? data.map((student: any) => student.id) : [];
+
+			setExcludedStudentIds(studentIds);
+			setPresences(studentIds.map((id: number) => [id, false]));
 		}
 	}
 
@@ -271,13 +278,17 @@ export default function Workshop() {
 		setLoading(true)
 	}, [])
 
-	// Função para alternar a presença de um aluno	
+	// Função para alternar a presença de um aluno	   
 	function togglePresence(id: number) {
-		if (presences.includes(id)) {
-			setPresences((prev: any) => prev.filter((idInPresence: number) => idInPresence !== id));
-		} else {
-			setPresences((prev: any) => [...prev, id]);
-		}
+		setPresences((prevPresences: [number, boolean][]) => {
+			return prevPresences.map(([studentId, presence]) => {
+				if (studentId === id) {
+					// Se o aluno estiver na lista, alterna o valor de presença
+					return [studentId, !presence];
+				}
+				return [studentId, presence];
+			});
+		});
 	}
 
 	// função para atualizar a tela após adicionar um aluno
@@ -286,20 +297,50 @@ export default function Workshop() {
 	}
 
 	// Função para registrar as presenças
-	function register() {
+	async function register() {
+		const classroomId = getTurmaIdFromURL();
+		let presencesArray = Array.isArray(presences) ? presences : []; // Garantir que presencesArray seja um array
+		const date = moment().format("YYYY-MM-DD"); // Obter a data atual no formato YYYY-MM-DD
+
 		const body = {
-			classId: '1',
-			professorId: '1',
-			presences: presences,
+			datetime: date,
+			presence: presencesArray.map(([studentid, presence]) => ({ studentid, presence })), // Mapear presenças para o formato esperado
+		};
+
+		try {
+			const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_IP}/classrooms/${classroomId}/class`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(body)
+			});
+
+			if (response.ok) {
+				console.log('Presenças registradas com sucesso!');
+			} else {
+				console.error('Erro ao registrar presenças:', response.statusText);
+			}
+		} catch (error) {
+			console.error('Erro ao registrar presenças:', error);
 		}
-		console.log(body);
 	}
+
 
 	// Renderização condicional da página
 	if (loading) {
 		return (
 			<Page>
-				<ButtonBack />
+				{session?.user.role === 'Leader' ? (
+					<Button type="text" icon={<ArrowLeftOutlined />} style={{ padding: '0px' }} onClick={() => window.location.href = "/oficinas"}>
+						Voltar
+					</Button>
+				) : null}
+				{session?.user.role === 'Teacher' ? (
+					<Button type="text" icon={<ArrowLeftOutlined />} style={{ padding: '0px' }} onClick={() => window.location.href = "/"}>
+						Voltar
+					</Button>
+				) : null}
 				<SpacerDiv>
 					<div>
 						<Title>{workshopName} - {classroomName}</Title>
@@ -328,27 +369,28 @@ export default function Workshop() {
 				<Divider></Divider>
 				<Main>
 					<MainTitle>Lista de Alunos</MainTitle>
+					<Information>
+						<InformationLabel>Data da aula: </InformationLabel>
+						<DatePicker defaultValue={moment()} format="DD/MM/YYYY" />
+					</Information>
 					<SpacerDiv>
-						{/* <Informations>
-							<Information>
-								<InformationLabel>Data e horário:</InformationLabel>
-								<InformationValue>{moment('02/02/2024').format('DD/MM/YYYY')} às {moment('13:00').format('HH:mm')}</InformationValue>
-							</Information>
-						</Informations> */}
 						<Informations>
 							<Information>
 								<InformationLabel>Nome dos alunos</InformationLabel>
 							</Information>
 						</Informations>
+
 						<>
 							<CustomButton onClick={() => setModalVisible(true)}>Adicionar aluno</CustomButton>
 							<StudentAddModal classroomId={idClass} onAddStudent={handleAddStudent} idOng={idOng} excludedStudentIds={excludedStudentIds} isModalVisible={modalVisible} setIsModalVisible={setModalVisible} />
 						</>
 					</SpacerDiv>
 					<DivStudentList>
-						{studentsClassroom.map((student: any, index: number) => (
-							<StudentModal key={index} student={student} functions={() => togglePresence(student.id)} />
-						))}
+						{studentsClassroom.length > 0 ? (
+							studentsClassroom.map((student: any, index: number) => (
+								<StudentModal key={index} student={student} functions={() => togglePresence(student.id)} />
+							))
+						) : "Nenhum aluno na turma"}
 					</DivStudentList>
 					<RegisterButton onClick={register}>Registrar presenças</RegisterButton>
 				</Main>

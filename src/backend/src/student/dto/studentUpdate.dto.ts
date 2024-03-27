@@ -1,4 +1,4 @@
-import { ong } from "src/ong/ong.entity";
+import { ong } from "../../ong/ong.entity";
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('students')

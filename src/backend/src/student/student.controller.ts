@@ -1,11 +1,11 @@
 // Importe de decoradores, entidade de estudante e DTO de estudante
-import { Controller, Post, Body, Put, Patch, Param, Delete } from "@nestjs/common";
+import { Controller, Post, Body, Put, Patch, Param, Get } from "@nestjs/common";
 import { StudentService } from "./student.service";
-import { StudentDTO } from "./student.dto";
+import { WorkshopService } from "../workshop/workshop.service";
+import { StudentUpdateDTO } from "../student/dto/studentUpdate.dto";
+import { StudentCreateDTO } from "../student/dto/studentCreate.dto";
+import { StudentDTO } from "./dto/student.dto";
 import { student } from "./student.entity";
-import { WorkshopService } from "src/workshop/workshop.service";
-import { StudentUpdateDTO } from "./studentUpdate.dto";
-import { StudentCreateDTO } from "./studentCreate.dto";
 
 @Controller('/students')
 export class StudentController {
@@ -28,8 +28,8 @@ export class StudentController {
    * pelo sistema.
   */
   @Post()
-  async registerStudent(@Body() dataStudent: StudentCreateDTO) {
-    return await this.studentService.register(dataStudent.name, dataStudent.gender, dataStudent.dateofbirth, dataStudent.address, dataStudent.maritalstatus, dataStudent.raceethnicity, dataStudent.city, dataStudent.state, dataStudent.phonenumber, dataStudent.landline, dataStudent.email, dataStudent.rg, dataStudent.cpf, 1);
+  async registerStudent(@Body() dataCreateStudent: StudentCreateDTO) {
+    return await this.studentService.register(dataCreateStudent);
   }
   
   /**
@@ -43,6 +43,18 @@ export class StudentController {
   @Patch('/:id')
   async updateStudent(@Param('id') id: string, @Body() updateStudent: StudentUpdateDTO) {
     return await this.workshopService.updateStudent(Number(id), updateStudent.name, updateStudent.gender, updateStudent.dateofbirth, updateStudent.address, updateStudent.maritalstatus, updateStudent.raceethnicity, updateStudent.city, updateStudent.state, updateStudent.phonenumber, updateStudent.landline, updateStudent.email, updateStudent.rg, updateStudent.cpf );
+  }
+
+  /**
+   * Lista o aluno com o ID fornecido. Este método recebe o ID de um aluno como parâmetro e retorna
+   * 
+   * @param {string} id - O identificador único do aluno a ser buscado.
+   * 
+   * @returns {Promise<student>} Uma promessa que resolve para a entidade `student` do aluno
+   */
+  @Get('/:id')
+  async getStudentById(@Param('id') id: string) {
+    return await this.studentService.findById(Number(id));
   }
   
 }

@@ -1,6 +1,6 @@
 // Bibliotecas externas
 import { getServerSession } from 'next-auth';
-import { nextAuthOptions } from '../api/auth/[...nextauth]/route';
+import { nextAuthOptions } from '@/utils/authOptions';
 import { redirect } from 'next/navigation';
 import React from 'react';
 

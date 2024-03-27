@@ -11,7 +11,10 @@ export class User{
     role: string
 
     @Column('int')
-    roleID: number
+    ongid: number
+
+    @Column('int')
+    teacherid: number
 
     @Column()
     email: string

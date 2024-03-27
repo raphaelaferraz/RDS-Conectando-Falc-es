@@ -1,6 +1,6 @@
 // Entidade de estudante no banco de dados
 
-import { ong } from "src/ong/ong.entity";
+import { ong } from "../ong/ong.entity";
 import { Column, Entity, JoinColumn, PrimaryGeneratedColumn } from "typeorm";
 import { ManyToOne } from "typeorm";
 

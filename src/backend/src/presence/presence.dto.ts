@@ -1,8 +1,6 @@
 // DTO da entidade de presença
 
 export class PresenceDTO {
-    date: string;
-    idClass: number;
-    idStudent: number;
+    studentid: number;
     presence: boolean;
 }

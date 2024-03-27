@@ -5,9 +5,10 @@ import styled from 'styled-components';
 import { useEffect, useState } from 'react';
 import { FilterOutlined } from '@ant-design/icons';
 import { Dropdown, Space } from 'antd';
-import Link from 'next/link';
 import { Checkbox, Modal, Avatar, Button, Form, Input, Select } from 'antd';
 import InfoModal from './infoModal';
+import { getSession } from "next-auth/react";
+
 // Estilização
 const Page = styled.div`
 	padding-left: 3rem;
@@ -84,6 +85,11 @@ const DivStudent = styled.div`
 	padding: 0.5rem 1rem 0.5rem 1rem;
 	border-radius: 10px; 
     align-items: center;
+
+    &:hover {
+        cursor: pointer;
+        color: #1F5673;
+    }
 `;
 
 const LabelProfessor = styled.h1`
@@ -117,6 +123,24 @@ const FilterText = styled.span`
     font-weight: 300;
 `
 
+const CustomListStudent = styled.div`
+  margin-bottom: 1rem !important;
+`;
+
+const LabelStudentName = styled.p`
+  &:hover {
+    cursor: pointer;
+    color: #1F5673;
+  }
+`;
+
+const CheckboxPresenca = styled(Checkbox)`
+  .ant-checkbox-checked .ant-checkbox-inner {
+    background-color: #1F5673; 
+    border-color: #1F5673;
+  }
+`;
+
 export default function Professors() {
     // Armazenamento dos estados de texto de busca, filtro, itens do dropdown, oficinas e categorias	
     const [searchText, setSearchText] = useState<string>();
@@ -124,10 +148,12 @@ export default function Professors() {
     const [filter, setFilter] = useState<number | null>();
     const [items, setDropdownItems] = useState<any>();
 
-	
     // Armazenamento do estado do modal e do modo de edição
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isAddProfessorModalVisible, setIsAddProfessorModalVisible] = useState(false);
+
+    // Armazena o id do professor selecionado
+    const [selectedProfessorId, setSelectedProfessorId] = useState<number>();
 
     // Funções que controlam a visibilidade do modal
     const showModal = () => {
@@ -169,25 +195,24 @@ export default function Professors() {
         setDropdownItems(items);
     }, [data])
 
+
+    const getWorkshops = async () => {
+        const ongId = (await getSession())?.user.ongid;
+
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_IP}/teachers/ong/${ongId}`);
+            const data = await response.json();
+            console.log(data)
+            setProfessors(data);
+        } catch (error) {
+            console.error('Erro ao buscar workshops:', error);
+        }
+    };
+
     // Função assíncrona que busca as oficinas da ONG no backend
     useEffect(() => {
-        const getWorkshops = async () => {
-            try {
-                const response = await fetch('http://localhost:3001/teachers');
-                const data = await response.json();
-                console.log(data)
-                setProfessors(data);
-            } catch (error) {
-                console.error('Erro ao buscar workshops:', error);
-            }
-        };
         getWorkshops();
     }, []);
-
-    // Função que envia os dados do formulário
-    const submit = () => {
-        console.log("Dados do formulário enviados");
-    };
 
     return (
         <>
@@ -197,40 +222,18 @@ export default function Professors() {
                 <Main>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                         <Search placeholder={'Digite o nome de um professor'} value={searchText} onChange={(e) => setSearchText(e.target.value)} />
-                        <Dropdown menu={{ items }}>
-                            <a>
-                                <Space>
-                                    <Filter>
-                                        <FilterOutlined style={{ fontSize: '1rem' }} />
-                                        <FilterText>{filter || 'Todas'}</FilterText>
-                                    </Filter>
-                                </Space>
-                            </a>
-                        </Dropdown>
-                        <CustomButton onClick={() => setIsAddProfessorModalVisible(true)}>Adicionar professor</CustomButton>
                     </div>
                     <DivStudentList>
-                    {data?.map((professor: any) =>
-                        <DivStudent onClick={showModal}>
-                            <LabelProfessor>{professor.name}</LabelProfessor>
-                            {/* -<LabelClassrrom>Atua em: {classroom.classroomname} - {classroom.workshopname}</LabelClassrrom> */}
-                        </DivStudent>
-                    )}
+                        {data?.filter((professor: any) => professor.name.startsWith(searchText || ''))?.map((professor: any, index: number) =>
+                            <DivStudent key={index} onClick={() => { showModal(); setSelectedProfessorId(professor.id) }}>
+                                <LabelProfessor>{professor.name}</LabelProfessor>
+                                {/* -<LabelClassrrom>Atua em: {classroom.classroomname} - {classroom.workshopname}</LabelClassrrom> */}
+                            </DivStudent>
+                        )}
                     </DivStudentList>
                 </Main>
             </Page>
-            <InfoModal data={data} setProfessors={setProfessors} setIsModalVisible={setIsModalVisible} isModalVisible={isModalVisible} />
-            <Modal okText={'Adicionar'} centered title="Adicionar Professor" open={isAddProfessorModalVisible} onOk={handleOkAddProfessor} onCancel={handleCancelAddProfessor}>
-                <Form initialValues={data} onFinish={submit}>
-                    <Select
-                        style={{ width: '350px', marginLeft: 'auto', marginRight: 'auto', display: 'block', marginTop: '20px', marginBottom: '20px' }}
-                        placeholder="Selecione o professor(a)">
-                        <Select.Option value='Professor 1'>Professor 1</Select.Option>
-                        <Select.Option value='Professor 2'>Professor 2</Select.Option>
-                        <Select.Option value='Professor 3'>Professor 3</Select.Option>
-                    </Select>
-                </Form>
-            </Modal>
+            <InfoModal getWorkshops={getWorkshops} selectedProfessorId={selectedProfessorId} data={data} setProfessors={setProfessors} setIsModalVisible={setIsModalVisible} isModalVisible={isModalVisible} />
         </>
     );
 }

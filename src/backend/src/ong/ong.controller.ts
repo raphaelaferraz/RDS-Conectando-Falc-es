@@ -1,7 +1,7 @@
 // Importa decoradores, entidade de ONG e serviço de workshop
 import { Controller, Get, Param } from "@nestjs/common";
 import { OngService } from "./ong.service";
-import { WorkshopService } from "src/workshop/workshop.service";
+import { WorkshopService } from "../workshop/workshop.service";
 
 
 @Controller('/ongs')
@@ -38,24 +38,24 @@ export class OngController {
    * Uma promessa que resolve para um objeto contendo os dados da ONG, a lista de workshops associados, a quantidade total de workshops,
    * e a lista de estudantes por workshop.
   */
-  // @Get('/:id')
-  // async findOngById(@Param('id') id: number){
-  //   const ong = await this.ongService.findById(Number(id));
-  //   const workshops = await this.workshopService.listByIdOng(Number(id));
-  //   const studentsWorkshops = await this.workshopService.listQtyStudentsByWorkshop(Number(id));
-  //   let coutWorkshops = workshops.length;
-
-  //   return {
-  //     ong: ong,
-  //     workshops: workshops,
-  //     qtyAllWorkshops: coutWorkshops,
-  //     studentsWorkshops: studentsWorkshops
-  //   };
-  // }
-  
   @Get(':id/name')
   async getOngNameById(@Param('id') id: string): Promise<string | null> {
     const ong = await this.ongService.findById(parseInt(id, 10));
     return ong ? ong.name : null;
+  }
+
+
+  /**
+   * 
+   * Lista todas as oficinas de uma ONG específica. Este método recebe o ID de uma ONG como parâmetro e retorna um array contendo todas as oficinas associadas a essa ONG.
+   * 
+   * @param {number} id - O ID da ONG cujas oficinas devem ser listadas.
+   * 
+   * @returns {Promise<Workshop[]>} Uma promessa que resolve para um array de objetos, onde cada objeto contém os dados de uma oficina associada à ONG.
+   */
+  @Get(':id/workshops')
+  async getWorkshopsByOngId(@Param('id') id: string): Promise<any> {
+    const workshops = await this.ongService.findWorkshopsByOngId(parseInt(id, 10));
+    return workshops;
   }
 }

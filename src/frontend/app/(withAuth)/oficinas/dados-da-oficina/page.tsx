@@ -216,8 +216,10 @@ export default function WorkshopDetailsPage() {
 		<>
 			{loading}
 			<Page>
-				<Button type="text" icon={<ArrowLeftOutlined />} style={{ marginBottom: '1rem' }} onClick={() => window.location.href = "/oficinas"} />
-				<Title>Detalhes da Oficina de {nameWorkshop}</Title>
+			<Button type="text" icon={<ArrowLeftOutlined />} style={{ padding: '0px' }} onClick={() => window.location.href = "/oficinas"}>
+				Voltar
+			 </Button>
+			 	<Title>Detalhes da Oficina de {nameWorkshop}</Title>
 				<Divider />
 				<Main>
 					<>

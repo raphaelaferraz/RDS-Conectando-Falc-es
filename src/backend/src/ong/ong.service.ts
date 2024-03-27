@@ -13,33 +13,6 @@ export class OngService {
     private entityManager: EntityManager,
   ) { }
 
-  // Simulação de uma entidade "Ong" no banco de dados 
-  // private ongs: OngEntity[] = [
-  //   {
-  //     "id": 1,
-  //     "name": "ONG Amigos Unidos",
-  //     "address": "Rua dos Animais, 123",
-  //     "email": "amigosunidos@gmail.com",
-  //     "cnpj": "123456789"
-  //   },
-  //   {
-  //     "id": 2,
-  //     "name": "ONG Natureza Viva",
-  //     "address": "Avenida das Árvores, 456",
-  //     "email": "naturezaviva@gmail.com",
-  //     "cnpj": "987654321"
-  //   },
-  //   {
-  //     "id": 3,
-  //     "name": "ONG Educação para Todos",
-  //     "address": "Travessa da Educação, 789",
-  //     "email": "educacaoparatodos@gmail.com",
-  //     "cnpj": "456789123"
-  //   }
-  // ];  
-
-
-
   /**
    * Lista todas as ONGs cadastradas. Este método não recebe parâmetros e retorna uma lista estática
    * de ONGs definidas internamente. Ideal para fornecer uma visão geral de todas as ONGs disponíveis
@@ -69,5 +42,38 @@ export class OngService {
     const query = 'SELECT * FROM "public"."ong" WHERE id = $1';
     const ong = await this.entityManager.query(query, [id]);
     return ong[0];
+  }
+
+  /**
+   * 
+   * Lista todas as oficinas de uma ONG específica. Este método recebe o ID de uma ONG como parâmetro
+    * e retorna uma lista de oficinas associadas a essa ONG.
+   * 
+   * @param {number} id - O ID da ONG cujas oficinas devem ser listadas.
+   * 
+   * @returns {Promise<OngEntity | undefined>} Uma promessa que resolve para um array de entidades
+   */
+  async findWorkshopsByOngId(id: number) {
+    const query = `
+    SELECT 
+        w.id, 
+        w.name, 
+        w.description, 
+        w.ongid, 
+        w.categoryid, 
+        c.name AS categoryname, 
+        c.color AS categorycolor,
+        o.name AS ongname
+    FROM 
+        "public"."workshop" w
+    JOIN 
+        "public"."category" c ON w.categoryid = c.id
+    JOIN 
+        "public"."ong" o ON w.ongid = o.id
+    WHERE 
+        w.ongid = $1
+    `;
+    const workshops = await this.entityManager.query(query, [id]);
+    return workshops;
   }
 }

@@ -11,6 +11,7 @@ import { Checkbox } from 'antd'
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import 'dotenv/config';
+import { useSession } from 'next-auth/react';
 
 // Estilização
 const Page = styled.div`
@@ -140,6 +141,7 @@ const RegisterButton = styled(CustomButton)`
 export default function Workshops() {
 
 	// Armazenamento dos estados de carregamento, data e presenças
+	const { data: session } = useSession()
 	const [loading, setLoading] = useState(false);
 	const [presences, setPresences] = useState<any>([]);
 	const [data, setData] = useState<any>([]);
@@ -147,7 +149,7 @@ export default function Workshops() {
 	// Função que busca os dados das oficinas
 	const getData = async () => {
 		try {
-			const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_IP}/workshops/1`);
+			const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_IP}/workshops/${session?.user.ongid}`);
 			setData((await response.json())[0]);
 		} catch (error) {
 			console.error('Erro ao buscar workshops:', error);

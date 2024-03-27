@@ -8,12 +8,15 @@ import CustomFormRegister from './CustomFormRegister';
 // Bibliotecas externas
 import React from 'react';
 import { Form, Input, Button, Select, DatePicker, Row, Col } from 'antd';
+import { useSession } from 'next-auth/react';
 
 // Variável para o componente Select do Ant Design
 const { Option } = Select;
 
 // Este é um componente de formulário para realizar cadastros de professores/alunos
 export default function FormRegister({ entity, url }: { entity: string, url: string }) {
+  const { data: session } = useSession()
+
   return (
     <CustomFormRegister name={`register${entity}`} onFinish={async (values: any) => {
       try {
@@ -22,7 +25,12 @@ export default function FormRegister({ entity, url }: { entity: string, url: str
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(values),
+          body: JSON.stringify(
+            {
+              ...values,
+              ongid: session?.user.ongid
+            }
+          ),
         });
 
         if (!response.ok) {

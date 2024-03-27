@@ -1,6 +1,9 @@
 // Importa o decorador Controller do pacote @nestjs/common e o serviço de Categoria
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Post } from '@nestjs/common';
 import { CategoryService } from './category.service';
+import { category } from './category.entity';
+import { Body } from '@nestjs/common';
+import { categoryDto } from './createCategory.dto';
 
 @Controller('/categories')
 export class CategoryController {
@@ -19,5 +22,19 @@ export class CategoryController {
     async getCategories() {
         const categories = await this.categoryRepository.getCategories();
         return categories;
+    }
+
+    /**
+     * Cria uma nova categoria. Este método recebe um objeto de categoria e o adiciona ao repositório de categorias.
+     * 
+     * Este endpoint é acessado através de uma solicitação POST para o caminho '/categories'.
+     * 
+     * @param {category} category - O objeto de categoria a ser adicionado
+     * 
+     * @returns {Promise<Category>} Uma promessa que resolve para a entidade `Category` da nova categoria
+     */
+    @Post()
+    async createCategory(@Body() category: categoryDto) {
+        return await this.categoryRepository.createCategory(category.name, category.color);
     }
 }

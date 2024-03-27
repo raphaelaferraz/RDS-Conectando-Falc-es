@@ -1,5 +1,5 @@
 // Importa decoradores e entidade de ONG    
-import { Controller, Get, Param, Post } from '@nestjs/common';
+import { Controller, Get, Param, Body, Post } from '@nestjs/common';
 import { WorkshopService } from './workshop.service';
 
 
@@ -21,7 +21,6 @@ export class WorkshopController {
     async listAll(){
         const workshops = await this.workshopService.listAll();
         return workshops;
-
     }
     
     /**
@@ -102,11 +101,29 @@ export class WorkshopController {
         const classrooms = await this.workshopService.listAllClassroomsByWorkshop(Number(idWorkshop));
         return classrooms;
     }
-
-    @Get('/student')
-    async getStudentsCountByWorkshop(){
-        const qty = await this.workshopService.getStudentsCountByWorkshop();
+    
+    @Get('/ong/:idOng/student')
+    async getStudentsCountByWorkshop(@Param('idOng') idOng: string){
+        const qty = await this.workshopService.getStudentsCountByWorkshop(Number(idOng));
         return qty;
+    }
+
+    @Post()
+    async createWorkshop(@Body() workshopData: any){
+        const { name, ongId, categoryId, description } = workshopData;
+        const workshop = await this.workshopService.createWorkshop(name, ongId, categoryId, description);
+        return workshop;
+    }
+
+    @Get('/:id')
+    async getWorkshopById(@Param('id') id: string){
+        const workshop = await this.workshopService.listWorkshopById(Number(id));
+        return workshop;
+    }
+
+    @Get('/ongid/:id')
+    async getWorkshopByOngId(@Param('id') id: number){
+        return this.workshopService.listByIdOng(id)
     }
     
 }

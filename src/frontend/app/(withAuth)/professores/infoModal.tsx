@@ -2,8 +2,12 @@
 
 import styled from 'styled-components';
 import { Modal, Avatar, Button, Form, Input, Select, Dropdown, Space } from 'antd';
-import { UserOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { useState } from 'react';
+import { UserOutlined, EditOutlined, DeleteOutlined, TeamOutlined } from '@ant-design/icons';
+import { useEffect, useState } from 'react';
+import AddClassroomModeContent from './addClassroomModeContent';
+import moment from 'moment';
+
+
 
 const Informations = styled.div`
   display: grid;
@@ -57,12 +61,38 @@ const HoverButtonDelete = styled(Button)`
   } 
 `;
 
-export default function InfoModal({ data, setProfessors, setIsModalVisible, isModalVisible }: { data: any, setProfessors: any, setIsModalVisible: any, isModalVisible: any }) {
+export default function InfoModal({ data, setProfessors, setIsModalVisible, isModalVisible, selectedProfessorId, getWorkshops }: { data: any, setProfessors: any, setIsModalVisible: any, isModalVisible: any, selectedProfessorId: number | undefined, getWorkshops: any }) {
     const [editMode, setEditMode] = useState(false);
+    const [addClassroomMode, setAddClassroomMode] = useState(false);
+    const [professorData, setProfessorData] = useState<any>();
 
     // Função que envia os dados do formulário
-    const submit = () => {
-        console.log("Dados do formulário enviados");
+    const saveInfo = (professor: any) => {
+        async function editInfo() {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_IP}/teachers/${professorData.id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(professor),
+            });
+            console.log(response);
+
+            if (response.ok) {
+                const index = data.findIndex((professor: any) => professor.id === professorData.id);
+
+                setProfessors((prev: any) => {
+                    const newList = [...prev];
+                    newList[index] = { ...newList[index], ...professor };
+                    return newList
+                });
+
+                setEditMode(false);
+                setProfessorData(professor);
+            }
+        }
+
+        editInfo();
     };
 
     const handleOk = () => {
@@ -71,91 +101,106 @@ export default function InfoModal({ data, setProfessors, setIsModalVisible, isMo
 
     const handleCancel = () => {
         setIsModalVisible(false);
+        setEditMode(false);
+        setAddClassroomMode(false);
     };
 
+    useEffect(() => {
+        if (data) {
+            setProfessorData(data.find((professor: any) => professor.id === selectedProfessorId));
+        }
+    }, [data, selectedProfessorId])
+
     return (
-        <Modal centered style={{ top: '0' }} width={600} title={editMode ? "Editar Professor" : "Detalhes do Professor"} open={isModalVisible} onOk={handleOk} onCancel={() => { setEditMode(false); handleCancel(); }} footer={null} >
+        <Modal centered style={{ top: '0' }} width={600} title={editMode ? "Editar Professor" : addClassroomMode ? "Turmas do professor" : "Detalhes do Professor"} open={isModalVisible} onOk={handleOk} onCancel={() => { setEditMode(false); handleCancel(); }} footer={null} >
             {!editMode ?
-                <>
-                    <Space direction="vertical" size="middle" style={{ rowGap: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Avatar size={64} icon={<UserOutlined />} />
-                        <p>{'professor'}</p>
-                    </Space>
-                    <Informations>
-                        <ContainerInformations>
-                            <ContentInformations>
-                                <LabelInformation>Data de Nascimento:</LabelInformation>
-                                <span>{'01/09/2003'}</span>
-                            </ContentInformations>
+                addClassroomMode ?
+                    <>
+                        <AddClassroomModeContent getWorkshops={getWorkshops} data={data} selectedProfessorId={selectedProfessorId} setAddClassroomMode={setAddClassroomMode} />
+                    </>
+                    :
+                    <>
+                        <Space direction="vertical" size="middle" style={{ rowGap: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Avatar size={64} icon={<UserOutlined />} />
+                            <p>{professorData?.name}</p>
+                        </Space>
+                        <Informations>
+                            <ContainerInformations>
+                                <ContentInformations>
+                                    <LabelInformation>Data de Nascimento:</LabelInformation>
+                                    <span>{moment(professorData?.dateofbirth).format('DD/MM/YYYY')}</span>
+                                </ContentInformations>
 
-                            <ContentInformations>
-                                <LabelInformation>RG:</LabelInformation>
-                                <span>{'8320432493'}</span>
-                            </ContentInformations>
+                                <ContentInformations>
+                                    <LabelInformation>RG:</LabelInformation>
+                                    <span>{professorData?.rg}</span>
+                                </ContentInformations>
 
-                            <ContentInformations>
-                                <LabelInformation>Estado Civil: </LabelInformation>
-                                <span>{'Casado'}</span>
-                            </ContentInformations>
+                                <ContentInformations>
+                                    <LabelInformation>Estado Civil: </LabelInformation>
+                                    <span>{professorData?.maritalstatus}</span>
+                                </ContentInformations>
 
-                            <ContentInformations>
-                                <LabelInformation>Endereço:</LabelInformation>
-                                <span>{'Rua M.M.D.C, 80'}</span>
-                            </ContentInformations>
+                                <ContentInformations>
+                                    <LabelInformation>Endereço:</LabelInformation>
+                                    <span>{professorData?.address}</span>
+                                </ContentInformations>
 
-                            <ContentInformations>
-                                <LabelInformation>Estado:</LabelInformation>
-                                <span>{'São Paulo'}</span>
-                            </ContentInformations>
+                                <ContentInformations>
+                                    <LabelInformation>Estado:</LabelInformation>
+                                    <span>{professorData?.state}</span>
+                                </ContentInformations>
 
-                            <ContentInformations>
-                                <LabelInformation>Telefone Fixo:</LabelInformation>
-                                <span>{'3431-2384'}</span>
-                            </ContentInformations>
-                        </ContainerInformations>
-                        <ContainerInformations>
+                                <ContentInformations>
+                                    <LabelInformation>Telefone Fixo:</LabelInformation>
+                                    <span>{professorData?.landline}</span>
+                                </ContentInformations>
+                            </ContainerInformations>
+                            <ContainerInformations>
 
-                            <ContentInformations>
-                                <LabelInformation>Gênero:</LabelInformation>
-                                <span>{'Feminino'}</span>
-                            </ContentInformations>
+                                <ContentInformations>
+                                    <LabelInformation>Gênero:</LabelInformation>
+                                    <span>{professorData?.gender === 'F' ? 'Feminino' : 'Masculino'}</span>
+                                </ContentInformations>
 
-                            <ContentInformations>
-                                <LabelInformation>CPF:</LabelInformation>
-                                <span>{'127.241.657.39'}</span>
-                            </ContentInformations>
+                                <ContentInformations>
+                                    <LabelInformation>CPF:</LabelInformation>
+                                    <span>{professorData?.cpf}</span>
+                                </ContentInformations>
 
-                            <ContentInformations>
-                                <LabelInformation>Raça/Etnia:</LabelInformation>
-                                <span>{'Branca'}</span>
-                            </ContentInformations>
+                                <ContentInformations>
+                                    <LabelInformation>Raça/Etnia:</LabelInformation>
+                                    <span>{professorData?.raceethnicity}</span>
+                                </ContentInformations>
 
-                            <ContentInformations>
-                                <LabelInformation>Cidade:</LabelInformation>
-                                <span>{'São Paulo'}</span>
-                            </ContentInformations>
+                                <ContentInformations>
+                                    <LabelInformation>Cidade:</LabelInformation>
+                                    <span>{professorData?.city}</span>
+                                </ContentInformations>
 
-                            <ContentInformations>
-                                <LabelInformation>Celular:</LabelInformation>
-                                <span>{'(11) 99236-6719'}</span>
-                            </ContentInformations>
+                                <ContentInformations>
+                                    <LabelInformation>Celular:</LabelInformation>
+                                    <span>{professorData?.phonenumber}</span>
+                                </ContentInformations>
 
-                            <ContentInformations>
-                                <LabelInformation>Email:</LabelInformation>
-                                <span>{'professor241@gmail.com'}</span>
-                            </ContentInformations>
-                        </ContainerInformations>
-                    </Informations>
-                    <ActionsContainer>
-                        <ButtonPrimary icon={<EditOutlined />} onClick={() => setEditMode(true)}>Editar</ButtonPrimary>
-                        <HoverButtonDelete icon={<DeleteOutlined />} onClick={() => alert("teste de remoção")}>Remover</HoverButtonDelete>
-                    </ActionsContainer>
-                </>
+                                <ContentInformations>
+                                    <LabelInformation>Email:</LabelInformation>
+                                    <span>{professorData?.email}</span>
+                                </ContentInformations>
+                            </ContainerInformations>
+                        </Informations>
+                        <ActionsContainer>
+                            <ButtonPrimary icon={<EditOutlined />} onClick={() => setEditMode(true)}>Editar</ButtonPrimary>
+                            <ButtonPrimary icon={<TeamOutlined />} onClick={() => setAddClassroomMode(true)}>Turmas</ButtonPrimary>
+                            {/* <HoverButtonDelete icon={<DeleteOutlined />} onClick={() => alert("teste de remoção")}>Remover</HoverButtonDelete> */}
+                        </ActionsContainer>
+                    </>
                 :
-                <Form onFinish={submit}>
+                <Form onFinish={saveInfo} layout="vertical">
                     <Form.Item
                         label="Nome Completo"
                         name="name"
+                        initialValue={professorData?.name}
                         rules={[
                             {
                                 required: true,
@@ -164,13 +209,14 @@ export default function InfoModal({ data, setProfessors, setIsModalVisible, isMo
                         ]}
                     >
                         <Input
-                            value={data}
-                            onChange={(e) => setProfessors({ ...data, name: e.target.value })}
-                            placeholder="Nome do Professor:" />
+                            // onChange={(e) => setProfessors({ ...data, name: e.target.value })}
+                            placeholder="Nome do Professor:"
+                        />
                     </Form.Item>
                     <Form.Item
                         label="Data de Aniversário:"
-                        name="dateOfBirth"
+                        name="dateofbirth"
+                        initialValue={professorData?.dateofbirth}
                         rules={[
                             {
                                 required: true,
@@ -178,13 +224,13 @@ export default function InfoModal({ data, setProfessors, setIsModalVisible, isMo
                             }
                         ]}>
                         <Input
-                            value={data}
-                            onChange={(e) => setProfessors({ ...data, dateOfBirth: e.target.value })}
+                            // onChange={(e) => setProfessors({ ...data, dateOfBirth: e.target.value })}
                             placeholder="DD/MM/AAAA" />
                     </Form.Item>
                     <Form.Item
                         label="Gênero:"
                         name="gender"
+                        initialValue={professorData?.gender}
                         rules={[
                             {
                                 required: true,
@@ -193,8 +239,7 @@ export default function InfoModal({ data, setProfessors, setIsModalVisible, isMo
                         ]}
                     >
                         <Select
-                            value={data.gender}
-                            onChange={(value) => setProfessors({ ...data, gender: value })}
+                            // onChange={(value) => setProfessors({ ...data, gender: value })}
                             placeholder="Selecione o gênero do(a) professor(a)">
                             <Select.Option value="M">Feminino</Select.Option>
                             <Select.Option value="F">Masculino</Select.Option>
@@ -204,6 +249,7 @@ export default function InfoModal({ data, setProfessors, setIsModalVisible, isMo
                     <Form.Item
                         label="RG:"
                         name="rg"
+                        initialValue={professorData?.rg}
                         rules={[
                             {
                                 required: true,
@@ -212,14 +258,14 @@ export default function InfoModal({ data, setProfessors, setIsModalVisible, isMo
                         ]}
                     >
                         <Input
-                            value={data.rg}
-                            onChange={(e) => setProfessors({ ...data, rg: e.target.value })}
+                            // onChange={(e) => setProfessors({ ...data, rg: e.target.value })}
                             placeholder="RG do Professor:" />
                     </Form.Item>
 
                     <Form.Item
                         label="CPF:"
                         name="cpf"
+                        initialValue={professorData?.cpf}
                         rules={[
                             {
                                 required: true,
@@ -228,14 +274,14 @@ export default function InfoModal({ data, setProfessors, setIsModalVisible, isMo
                         ]}
                     >
                         <Input
-                            value={data.cpf}
-                            onChange={(e) => setProfessors({ ...data, cpf: e.target.value })}
+                            // onChange={(e) => setProfessors({ ...data, cpf: e.target.value })}
                             placeholder="CPF do Professor:" />
                     </Form.Item>
 
                     <Form.Item
                         label="Estado Civil:"
-                        name="maritalStatus"
+                        name="maritalstatus"
+                        initialValue={professorData?.maritalstatus}
                         rules={[
                             {
                                 required: true,
@@ -244,8 +290,7 @@ export default function InfoModal({ data, setProfessors, setIsModalVisible, isMo
                         ]}
                     >
                         <Select
-                            value={data.maritalStatus}
-                            onChange={(value) => setProfessors({ ...data, maritalStatus: value })}
+                            // onChange={(value) => setProfessors({ ...data, maritalStatus: value })}
                             placeholder="Selecione o estado civil do(a) professor(a)">
                             <Select.Option value="solteiro">Solteiro(a)</Select.Option>
                             <Select.Option value="casado">Casado(a)</Select.Option>
@@ -256,7 +301,8 @@ export default function InfoModal({ data, setProfessors, setIsModalVisible, isMo
 
                     <Form.Item
                         label="Raça/Etnia:"
-                        name="raceEthnicity"
+                        name="raceethnicity"
+                        initialValue={professorData?.raceethnicity}
                         rules={[
                             {
                                 required: true,
@@ -265,8 +311,7 @@ export default function InfoModal({ data, setProfessors, setIsModalVisible, isMo
                         ]}
                     >
                         <Select
-                            value={data.raceEthnicity}
-                            onChange={(value) => setProfessors({ ...data, raceEthnicity: value })}
+                            // onChange={(value) => setProfessors({ ...data, raceEthnicity: value })}
                             placeholder="Selecione a raça/etnia do(a) professor(a)">
                             <Select.Option value='branco'>Branco(a)</Select.Option>
                             <Select.Option value='preto'>Preto(a)</Select.Option>
@@ -278,6 +323,7 @@ export default function InfoModal({ data, setProfessors, setIsModalVisible, isMo
                     <Form.Item
                         label="Endereço:"
                         name="address"
+                        initialValue={professorData?.address}
                         rules={[
                             {
                                 required: true,
@@ -286,14 +332,14 @@ export default function InfoModal({ data, setProfessors, setIsModalVisible, isMo
                         ]}
                     >
                         <Input
-                            value={data.address}
-                            onChange={(e) => setProfessors({ ...data, address: e.target.value })}
+                            // onChange={(e) => setProfessors({ ...data, address: e.target.value })}
                             placeholder="Endereço do(a) professor(a):" />
                     </Form.Item>
 
                     <Form.Item
                         label="Estado:"
                         name="state"
+                        initialValue={professorData?.state}
                         rules={[
                             {
                                 required: true,
@@ -302,8 +348,7 @@ export default function InfoModal({ data, setProfessors, setIsModalVisible, isMo
                         ]}
                     >
                         <Select
-                            value={data.state}
-                            onChange={(value) => setProfessors({ ...data, state: value })}
+                            // onChange={(value) => setProfessors({ ...data, state: value })}
                             placeholder="Selecione o estado do(a) professor(a)">
                             <Select.Option value='Acre'>Acre</Select.Option>
                             <Select.Option value='Alagoas'>Alagoas</Select.Option>
@@ -338,6 +383,7 @@ export default function InfoModal({ data, setProfessors, setIsModalVisible, isMo
                     <Form.Item
                         label="Cidade:"
                         name="city"
+                        initialValue={professorData?.city}
                         rules={[
                             {
                                 required: true,
@@ -346,14 +392,14 @@ export default function InfoModal({ data, setProfessors, setIsModalVisible, isMo
                         ]}
                     >
                         <Input
-                            value={data.city}
-                            onChange={(e) => setProfessors({ ...data, city: e.target.value })}
+                            // onChange={(e) => setProfessors({ ...data, city: e.target.value })}
                             placeholder="Cidade do(a) professor(a):" />
                     </Form.Item>
 
                     <Form.Item
                         label="Telefone Fixo:"
-                        name="landlinePhone"
+                        name="landline"
+                        initialValue={professorData?.landline}
                         rules={[
                             {
                                 required: true,
@@ -362,14 +408,14 @@ export default function InfoModal({ data, setProfessors, setIsModalVisible, isMo
                         ]}
                     >
                         <Input
-                            value={data.landlinePhone}
-                            onChange={(e) => setProfessors({ ...data, landlinePhone: e.target.value })}
+                            // onChange={(e) => setProfessors({ ...data, landlinePhone: e.target.value })}
                             placeholder="Telefone do(a) professor(a):" />
                     </Form.Item>
 
                     <Form.Item
                         label="Celular:"
-                        name="phoneNumber"
+                        name="phonenumber"
+                        initialValue={professorData?.phonenumber}
                         rules={[
                             {
                                 required: true,
@@ -378,14 +424,14 @@ export default function InfoModal({ data, setProfessors, setIsModalVisible, isMo
                         ]}
                     >
                         <Input
-                            value={data.phoneNumber}
-                            onChange={(e) => setProfessors({ ...data, phoneNumber: e.target.value })}
+                            // onChange={(e) => setProfessors({ ...data, phoneNumber: e.target.value })}
                             placeholder="Celular do(a) professor(a):" />
                     </Form.Item>
 
                     <Form.Item
                         label="Email:"
                         name="email"
+                        initialValue={professorData?.email}
                         rules={[
                             {
                                 required: true,
@@ -394,16 +440,17 @@ export default function InfoModal({ data, setProfessors, setIsModalVisible, isMo
                         ]}
                     >
                         <Input
-                            value={data.email}
-                            onChange={(e) => setProfessors({ ...data, email: e.target.value })}
+                            // onChange={(e) => setProfessors({ ...data, email: e.target.value })}
                             placeholder="Email do(a) professor(a):" />
                     </Form.Item>
                     <Form.Item>
-                        <ButtonPrimary>Salvar</ButtonPrimary>
-                        <HoverButtonDelete onClick={() => setEditMode(false)}>Cancelar</HoverButtonDelete>
+                        <ActionsContainer>
+                            <ButtonPrimary type="primary" htmlType="submit">Salvar</ButtonPrimary>
+                            <HoverButtonDelete onClick={() => setEditMode(false)}>Cancelar</HoverButtonDelete>
+                        </ActionsContainer>
                     </Form.Item>
                 </Form>
             }
-        </Modal>
+        </Modal >
     )
 }

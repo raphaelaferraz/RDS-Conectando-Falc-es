@@ -8,42 +8,9 @@ export class CategoryService{
     constructor(
         @InjectEntityManager()
         private entityManager: EntityManager,
-      ) {}
-    // Simulação dos dados de Categorias no banco de dados
-    // private categories: CategoryEntity[] = [
-    //     {
-    //         id: 1,
-    //         category: 1,
-    //         name: 'Esportes',
-    //         color: '#F5821E',
-    //     },
-    //     {
-    //         id: 2,
-    //         category: 2,
-    //         name: 'Arte',
-    //         color: '#F5C630',
-    //     },
-    //     {
-    //         id: 3,
-    //         category: 3,
-    //         name: 'Administração',
-    //         color: '#2F3192',
-    //     },
-    //     {
-    //         id: 4,
-    //         category: 4,
-    //         name: 'Dança',
-    //         color: '#EB1C68',
-    //     },
-    //     {
-    //         id: 5,
-    //         category: 5,
-    //         name: 'Culinária',
-    //         color: '#63236F',
-    //     }
-    // ]
+    ) {}
 
-        /**
+    /**
      * Recupera todas as categorias disponíveis. Este método simula a obtenção de dados de categorias
      * de um banco de dados, retornando uma lista estática de categorias definidas internamente.
      * Não recebe parâmetros e é projetado para ser usado internamente ou por controladores que necessitam
@@ -56,5 +23,20 @@ export class CategoryService{
         const query = 'SELECT * FROM "public"."category"';
         const categories = await this.entityManager.query(query);
         return categories;
+    }
+
+    /**
+     * Cria uma nova categoria. Este método recebe um nome e uma cor para a nova categoria e a adiciona
+     * 
+     * @param {string} name - O nome da nova categoria
+     * @param {string} color - A cor associada à nova categoria
+     * 
+     * @returns {Promise<Category>} Uma promessa que resolve para a entidade `Category` da nova categoria
+     * 
+     */
+    async createCategory(name: string, color: string) {
+        const query = `INSERT INTO "public"."category" (name, color) VALUES ($1, $2) RETURNING *`;
+        const result = await this.entityManager.query(query, [name, color]);
+        return result[0];
     }
 }

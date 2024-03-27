@@ -3,7 +3,7 @@
 import { Module } from "@nestjs/common";
 import { OngController } from "./ong.controller";
 import { OngService } from "./ong.service";
-import { WorkshopService } from "src/workshop/workshop.service";
+import { WorkshopService } from "../workshop/workshop.service";
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ong } from "./ong.entity";
 

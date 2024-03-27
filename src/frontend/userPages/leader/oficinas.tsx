@@ -1,12 +1,16 @@
 // Componentes internos do projeto
-import WorkshopCard from '@/components/WorkshopCard/workshopCard';
+import WorkshopCard from '@/components/cards/workshopCard';
 import ButtonBack from '@/components/ui/button/buttonBack';
+import ButtonNavigation from '@/components/ui/button/buttonNavigation';
 
 // Bibliotecas externas
 import styled from 'styled-components';
 import { FilterOutlined } from '@ant-design/icons';
 import { Dropdown, Space } from 'antd'
 import { useEffect, useState } from 'react';
+import { ArrowLeftOutlined } from '@ant-design/icons';
+import { Button } from 'antd';
+import { useSession } from 'next-auth/react';
 
 // Estilização
 const Page = styled.div`
@@ -24,9 +28,10 @@ const Title = styled.h1`
 	margin-bottom: 2rem;
 `;
 
-const Span = styled(Title)`
+const Span = styled.span`
 	font-weight: 600;
 	display: inline;
+	font-size: 18px;
 `;
 
 const Divider = styled.div`
@@ -61,6 +66,12 @@ const Filter = styled.div`
 	}
 `;
 
+const CustomButtonNavigate = styled(ButtonNavigation)`
+	width: 10rem;
+	font-size: 1rem;
+	height: 2.5rem;
+`;
+
 const FilterText = styled.span`
 	margin-left: 0.5rem;
 	font-weight: 100;
@@ -84,6 +95,7 @@ const CardsDiv = styled.div`
 
 export default function WorkshopLeader() {
 	// Armazenamento dos estados de texto de busca, filtro, itens do dropdown, oficinas e categorias	
+	const { data: session } = useSession()
 	const [searchText, setSearchText] = useState<string>();
 	const [filter, setFilter] = useState<number | null>(0);
 	const [items, setDropdownItems] = useState<any>();
@@ -95,8 +107,10 @@ export default function WorkshopLeader() {
 	useEffect(() => {
 		const getWorkshops = async () => {
 			try {
-				const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_IP}/workshops`);
-				setWorkshops(await response.json());
+				const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_IP}/ongs/${session?.user.ongid}/workshops`);
+				const responseJson = await response.json();
+				console.log(responseJson);
+				setWorkshops(responseJson);
 			} catch (error) {
 				console.error('Erro ao buscar workshops:', error);
 			}
@@ -149,8 +163,12 @@ export default function WorkshopLeader() {
 	if (categories && workshops) {
 		return (
 			<Page>
-				<ButtonBack />
-				<Title>Oficinas da <Span style={{ fontWeight: 400 }}>{workshops?.[0].ongname}</Span></Title>
+				<Button type="text" icon={<ArrowLeftOutlined />} style={{ padding: '0px' }} onClick={() => window.location.href = "/"}>
+					Voltar
+				</Button>
+				<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+					<Title>Oficinas da ONG {workshops?.[0].ongname}</Title>
+				</div>
 				<Divider></Divider>
 				<Main>
 					<div style={{ display: 'flex', alignItems: 'center' }}>
@@ -167,12 +185,19 @@ export default function WorkshopLeader() {
 						</Dropdown>
 					</div>
 					<CardsDiv>
-						{workshops?.
-							filter((workshop: any) => (workshop.name.toLowerCase().startsWith(searchText?.toLowerCase().trim()) || !searchText) && (workshop?.categoryid == filter || !filter))
-							.map((workshop: any) => {
-								const studentsQuantity = workshop?.classroom[0]?.students.length;
-								return <WorkshopCard name={workshop.name} color={workshop?.color || '#FFFFFF'} weekDay={workshop.classroom[0].day} studentsQuantity={studentsQuantity} time={workshop.classroom[0].startTime} workshopId={workshop.workshopid} classroomId={workshop?.classroom[0]?.classroomid} />
-							})}
+						{workshops?.map((workshop: any) => (
+							<WorkshopCard
+								key={workshop.id}
+								workshopname={workshop.name}
+								color={workshop.categorycolor || '#FFFFFF'}
+								workshopId={workshop.id}
+								link={`turmas/?id=${workshop.id}`}
+								showSchedule={false}
+								showParticipants={false}
+								showClassroomName={false}
+								showWorkshopPage={true}
+							/>
+						))}
 					</CardsDiv>
 				</Main>
 			</Page>

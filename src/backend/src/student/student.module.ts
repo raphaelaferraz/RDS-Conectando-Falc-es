@@ -5,12 +5,13 @@ import { StudentController } from "./student.controller";
 import { StudentService } from "./student.service";
 import { student } from "./student.entity";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { WorkshopService } from "src/workshop/workshop.service";
-import { StudentUpdateDTO } from "./studentUpdate.dto";
+import { StudentUpdateDTO } from "../student/dto/studentUpdate.dto";
+import { WorkshopService } from "../workshop/workshop.service";
+
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([StudentUpdateDTO])],
+    TypeOrmModule.forFeature([student])],
   controllers: [StudentController],
   providers: [StudentService, WorkshopService],
 })

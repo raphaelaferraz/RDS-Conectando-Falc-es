@@ -9,35 +9,10 @@ import { AuthCredentialsResponseUser } from "./interfaces/authCredentialsRespons
 export class UserService {
     // Código comentado abaixo será usado para intregação com o banco de dados durante a sprint 3
 
-    // constructor(
-    //     @InjectRepository(User)
-    //     private usersRepository: Repository<User>,
-    // ) { }
-
-    // Simulação de uma entidade "User" no banco de dados 
-    private readonly users: User[] = [
-        {
-            "id": 1,
-            "role": "Teacher",
-            "roleID": 1,
-            "email": "professor@gmail.com",
-            "password": "teste"
-        },
-        {
-            "id": 2,
-            "role": "Leader",
-            "roleID": 2,
-            "email": "lider@gmail.com",
-            "password": "teste"
-        },
-        {
-            "id": 3,
-            "role": "GF",
-            "roleID": 3,
-            "email": "gf@gmail.com",
-            "password": "teste"
-        }
-    ];
+    constructor(
+        @InjectRepository(User)
+        private usersRepository: Repository<User>,
+    ) { }
 
     /**
      * Autentica um usuário com base nas credenciais fornecidas e retorna suas credenciais de autenticação,
@@ -54,10 +29,10 @@ export class UserService {
      * @returns {AuthCredentialsResponseUser} Um objeto contendo o `role` (papel do usuário) e `roleID` (identificador
      * do papel), que são utilizados para definir as permissões e o acesso do usuário no sistema.
     */
-    authCreditialsUser(authCredentialsUser: AuthCredentialsUser): AuthCredentialsResponseUser{
-        const { role, roleID } = this.users.find( user => user.email == authCredentialsUser.email && user.password == authCredentialsUser.password)
-
-        return {role, roleID}
+    async authCreditialsUser(authCredentialsUser: AuthCredentialsUser): Promise<User | undefined>{
+        const query = `SELECT * FROM appuser WHERE email = $1 and password = $2`
+        const result = await this.usersRepository.query(query, [authCredentialsUser.email, authCredentialsUser.password])
+        return result[0] || null
     }
 
 }

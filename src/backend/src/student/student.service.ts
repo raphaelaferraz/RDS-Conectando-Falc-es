@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { student } from "./student.entity";
-import { StudentDTO } from "./student.dto";
-import { StudentCreateDTO } from "./studentCreate.dto";
+import { StudentDTO } from "./dto/student.dto";
 import { InjectEntityManager } from "@nestjs/typeorm";
 import { EntityManager } from "typeorm";
+import { StudentCreate } from "./interface/studentCreate.interface";
 
 @Injectable()
 export class StudentService {
@@ -36,12 +36,12 @@ export class StudentService {
    * @param {string} email - O endereço de email do estudante.
    * @param {string} rg - O número do RG do estudante.
    * @param {string} cpf - O número do CPF do estudante.
-   * @param {number} ongInd - O identificador da ONG associada ao estudante. 
+   * @param {number} ongInd - O identificador da ONG associada ao estudante.
    * 
    * @returns {Promise<student>} Uma promessa que resolve para a entidade `student` do estudante
    * recém-registrado, incluindo seu identificador único e todas as informações fornecidas.
   */
-  async register(name: string, gender: string, dateofbirth: string, address: string, maritalstatus: string, raceethnicity: string, city: string, state: string, phonenumber: string, landline: string, email: string, rg: string, cpf: string, ongInd: number) {
+  async register(studentCreateDTO: StudentCreate) {
     const query = `INSERT INTO "student" (
       "name", 
       "gender", 
@@ -73,7 +73,20 @@ export class StudentService {
       $13,
       $14
   ) RETURNING *;`
-    const result = await this.entityManager.query(query, [name, gender, dateofbirth, address, maritalstatus, raceethnicity, city, state, phonenumber, landline, email, rg, cpf, ongInd]);
+    const result = await this.entityManager.query(query, [studentCreateDTO.name, studentCreateDTO.gender, studentCreateDTO.dateofbirth, studentCreateDTO.address, studentCreateDTO.maritalstatus, studentCreateDTO.raceethnicity, studentCreateDTO.city, studentCreateDTO.state, studentCreateDTO.phonenumber, studentCreateDTO.landline, studentCreateDTO.email, studentCreateDTO.rg, studentCreateDTO.cpf, studentCreateDTO.ongid]);
     return result;
   }
+
+  /**
+   * Lista as informações do estudante de acordo com o ID fornecido. Este método recebe o ID do estudante
+   * 
+   * @param {number} id - O identificador único do estudante a ser buscado.
+   * 
+   * @returns {Promise<student>} Uma promessa que resolve para a entidade `student` do estudante
+   */
+  async findById(id: number) {
+    const query = `SELECT * FROM "student" WHERE "id" = $1;`
+    const result = await this.entityManager.query(query, [id]);
+    return result;
+  };
 }

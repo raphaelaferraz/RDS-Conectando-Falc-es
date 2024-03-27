@@ -11,12 +11,11 @@ import styled from 'styled-components';
 
 // Estilização
 const FooterDiv = styled.footer`
-    height: 6rem;
     width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-color: var(--gray);
+    background-color: #F0EDED;
 `;
 
 const LogoDiv = styled.div`
@@ -27,41 +26,45 @@ const LogoDiv = styled.div`
     position: relative;
 `;
 
-const DivCopyright = styled.div`
-    position: relative;
+const LogoDivCustom = styled.div`
+    margin-bottom: -0.5rem;
+`;
+
+const ContainerRight = styled.div`
+    display: flex;
+    align-items: inherit;
+    gap: 3rem;
+`;
+
+const GeneralContainer = styled.div`
     display: flex;
     width: 100%;
-    height: 10px;
-    justify-content: center;
-    padding-bottom: 20px;
-    background-color: var(--gray-dark);
-
-    h3{
-        font-size: 0.8rem;
-        padding-top: 5px;
-        
-    }
+    height: 5rem;
+    align-items: center;
+    justify-content: space-around;
+    gap: 45rem;
 `;
+
 
 
 // Este componente mostra os responsáveis pela criação do projeto: Conectando Falcões, Gerando Falcões e Inteli (Instituto de Tecnologia e Liderança).
 export default function Footer() {
     return (
         <FooterDiv>
-            <div style={{ display: 'flex', width: '100%', height: '5rem', alignItems: 'center', justifyContent: 'space-around' }}>
-                <LogoDiv>
-                    <a href="https://gerandofalcoes.com/" target='_blank'><GerandoFalSVG /></a>
-                </LogoDiv>
+            <GeneralContainer>
                 <LogoDiv>
                     <a href="/"><ConectandoFalSVG width={100} /></a>
                 </LogoDiv>
-                <LogoDiv>
-                    <a href="https://inteli.edu.br/" target='_blank'><InteliSVG /></a>
-                </LogoDiv>
-            </div>
-            <DivCopyright>
-                <h3>© 2024 all rights reserved</h3>
-            </DivCopyright>
+
+                <ContainerRight>
+                    <LogoDivCustom>
+                        <a href="https://gerandofalcoes.com/" target='_blank'><GerandoFalSVG /></a>
+                    </LogoDivCustom>
+                    <LogoDiv>
+                        <a href="https://inteli.edu.br/" target='_blank'><InteliSVG /></a>
+                    </LogoDiv>
+                </ContainerRight>
+            </GeneralContainer>
         </FooterDiv>
     );
 }

@@ -107,13 +107,14 @@ const Initial = styled.div`
 
 // Esta página "HomeOng" é responsável por renderizar a página inicial do líder da ONG
 export default function HomeLeader() {
+  const { data: session } = useSession();
   const [ongName, setOngName] = useState('');
   const [totalWorkshops, setTotalWorkshops] = useState(0);
 
   useEffect(() => {
     async function fetchOngName() {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_IP}/ongs/1/name`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_IP}/ongs/${session?.user.ongid}/name`);
         if (!response.ok) {
           throw new Error('Failed to fetch ONG name');
         }
@@ -129,7 +130,7 @@ export default function HomeLeader() {
     useEffect(() => {
       async function fetchWorkshopsTotal() {
         try {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_IP}/workshops`);
+          const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_IP}/workshops/ongid/${session?.user.ongid}`);
           if (!response.ok) {
             throw new Error('Failed to fetch workshops');
           }

@@ -84,7 +84,7 @@ export function StudentAddModal({ onAddStudent, idOng, isModalVisible, setIsModa
 
   return (
     <Modal title="Adicionar Aluno" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel} footer={[
-      <div>
+      <div key={'adicionar aluno'}>
         <ButtonPrimaryModal handleClick={handleAddSelectedStudents}>
           Adicionar aluno
         </ButtonPrimaryModal>
@@ -96,8 +96,8 @@ export function StudentAddModal({ onAddStudent, idOng, isModalVisible, setIsModa
     ]}>
       {studentsClassroom.filter((student: { id: never }) => !excludentsStudents.includes(student.id)).map((student: { id: never }) => {
         return (
-          <CustomListStudent>
-            <div key={student.id} onClick={() => handleSelectStudent(student)}>
+          <CustomListStudent key={student.id}>
+            <div onClick={() => handleSelectStudent(student)}>
               <StudentModal student={student} />
             </div>
           </CustomListStudent>

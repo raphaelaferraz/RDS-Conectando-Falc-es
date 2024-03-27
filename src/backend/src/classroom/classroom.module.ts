@@ -5,7 +5,7 @@ import { ClassroomService } from './classroom.service';
 import { classroom } from './classroom.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClassroomController } from './classroom.controller';
-import { WorkshopService } from 'src/workshop/workshop.service';
+import { WorkshopService } from '../workshop/workshop.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([classroom])],
