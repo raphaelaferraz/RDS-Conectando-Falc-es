@@ -28,14 +28,13 @@ import { ClassroomService } from './classroom/classroom.service';
   imports: [
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'database-1.cd6ka4g8alme.us-east-1.rds.amazonaws.com',
+      host: 'cornelius.db.elephantsql.com',
       port: 5432,
-      username: 'postgres',
-      password: '12345678',
-      database: 'conectando_falcoes_database',
+      username: 'aiomqkhi',
+      password: 'dCsNMk1RlJqsy59eB7vcSff9AcbVxVhh',
+      database: 'aiomqkhi',
       entities: [ong, workshop, category, student],
       synchronize: false, 
-      ssl: false,
     }), OngModule, WorkshopModule, ClassroomModule, StudentModule, CategoryModule, UserModule, PresenceModule, ClassModule, TeacherModule],
   controllers: [AppController, ClassController, ClassroomController],
   providers: [AppService, ClassService, PresenceService, ClassroomService],
