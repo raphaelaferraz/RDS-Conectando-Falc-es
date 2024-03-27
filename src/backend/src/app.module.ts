@@ -35,7 +35,6 @@ import { ClassroomService } from './classroom/classroom.service';
       database: 'conectando_falcoes_database',
       entities: [ong, workshop, category, student],
       synchronize: false, 
-      // desativa ssl
       ssl: false,
     }), OngModule, WorkshopModule, ClassroomModule, StudentModule, CategoryModule, UserModule, PresenceModule, ClassModule, TeacherModule],
   controllers: [AppController, ClassController, ClassroomController],
