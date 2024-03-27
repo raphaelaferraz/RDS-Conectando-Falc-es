@@ -217,10 +217,10 @@ export default function Professors() {
 
     return (
         <>
-            <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => window.location.href = "/"}>
-				Voltar
-			 </Button>
             <Page>
+                <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => window.location.href = "/"}>
+                    Voltar
+                </Button>
                 <Title>Professores da <Span style={{ fontWeight: 400 }}> {data?.[0]?.ongname}</Span></Title>
                 <Divider></Divider>
                 <Main>
