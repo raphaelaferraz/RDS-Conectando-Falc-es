@@ -156,9 +156,6 @@ export default function WorkshopTeacher() {
 	if (categories && workshops) {
 		return (
 			<Page>
-				<Button type="text" icon={<ArrowLeftOutlined />} onClick={() => window.location.href = "/"}>
-				Voltar
-			 </Button>
 				<Title>Bem-vindo(a), <Span style={{ fontWeight: 400 }}>{workshops?.[0].classroom[0].professor}</Span></Title>
 				<Divider></Divider>
 				<Main>
