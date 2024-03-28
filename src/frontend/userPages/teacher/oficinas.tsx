@@ -8,6 +8,8 @@ import { FilterOutlined } from '@ant-design/icons';
 import { Dropdown, Space } from 'antd'
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { ArrowLeftOutlined } from '@ant-design/icons';
+import { Button } from 'antd';
 
 // Estilização
 const Page = styled.div`
@@ -99,8 +101,9 @@ export default function WorkshopTeacher() {
 
 			try {
 				const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_IP}/teachers/${session?.user.teacherid}/workshops`);
-				console.log(response)
-				setWorkshops(await response.json());
+				const workshops = await response.json();
+				console.log('Workshops:', workshops);
+				setWorkshops(workshops);
 			} catch (error) {
 				console.error('Erro ao buscar workshops:', error);
 			}
@@ -153,6 +156,9 @@ export default function WorkshopTeacher() {
 	if (categories && workshops) {
 		return (
 			<Page>
+				<Button type="text" icon={<ArrowLeftOutlined />} onClick={() => window.location.href = "/"}>
+				Voltar
+			 </Button>
 				<Title>Bem-vindo(a), <Span style={{ fontWeight: 400 }}>{workshops?.[0].classroom[0].professor}</Span></Title>
 				<Divider></Divider>
 				<Main>
@@ -174,7 +180,17 @@ export default function WorkshopTeacher() {
 							filter((workshop: any) => (workshop.name.toLowerCase().startsWith(searchText?.toLowerCase().trim()) || !searchText) && (workshop?.categoryid == filter || !filter))
 							.map((workshop: any) => {
 								const studentsQuantity = workshop?.classroom[0]?.students.length;
-								return <WorkshopCard workshopname={workshop.name} classroomname={workshop.classroom[0]?.classroomname} color={workshop?.color || '#FFFFFF'} weekDay={workshop.classroom[0].day} studentsQuantity={studentsQuantity} time={workshop.classroom[0].startTime} workshopId={workshop.workshopid} classroomId={workshop?.classroom[0]?.classroomid} />
+								return <WorkshopCard
+									workshopname={workshop.name}
+									classroomname={workshop.classroom[0]?.classroomname}
+									color={workshop?.color || '#FFFFFF'} weekDay={workshop.classroom[0].day}
+									studentsQuantity={studentsQuantity}
+									time={workshop.classroom[0].startTime}
+									workshopId={workshop.workshopid}
+									classroomId={workshop?.classroom[0]?.classroomid}
+									key={workshop.workshopid}
+									link={`oficinas/aula/?id=${workshop?.classroom[0]?.classroomid}`}
+								/>
 							})}
 					</CardsDiv>
 				</Main>

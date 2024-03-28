@@ -108,7 +108,7 @@ export default function FormWorkshopRegister({ entity, url }: { entity: string, 
         <Col span={12}>
           <Form.Item
             name="categoryId"
-            label={"Categria da Oficina"}
+            label={"Categoria da Oficina"}
             rules={[
               {
                 required: true,
