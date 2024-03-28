@@ -185,7 +185,7 @@ export default function WorkshopLeader() {
 						</Dropdown>
 					</div>
 					<CardsDiv>
-						{workshops?.map((workshop: any) => (
+					{workshops?.filter((workshop: any) => (workshop.categoryid == filter) || !filter)?.map((workshop: any) => (
 							<WorkshopCard
 								key={workshop.id}
 								workshopname={workshop.name}
